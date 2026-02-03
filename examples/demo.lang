@@ -1,0 +1,18 @@
+# Demo language entries
+item.minecraft.diamond_sword.name=§bDiamond Sword
+item.minecraft.diamond_sword.description=§fA blade of pure §bdiamond§f.
+
+# Colors
+color.red=§cRed
+color.green=§aGreen
+color.blue=§bBlue
+
+# Formatting
+format.bold=§lBold Text
+format.italic=§oItalic Text
+format.underline=§nUnderline
+format.strikethrough=§mStrikethrough
+format.reset=§rReset
+
+# Mixed
+ui.start=§aStart §f|§e Options §f|§c Quit

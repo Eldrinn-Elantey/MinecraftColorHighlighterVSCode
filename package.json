@@ -1,0 +1,43 @@
+{
+  "name": "minecraft-color-highlighter",
+  "displayName": "Minecraft Color Highlighter",
+  "description": "Highlights Minecraft \u00a7 color/formatting codes and .lang keys.",
+  "version": "0.0.1",
+  "publisher": "local",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "minecraft-lang",
+        "aliases": [
+          "Minecraft Lang",
+          "minecraft-lang"
+        ],
+        "extensions": [
+          ".lang"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "echo \"No lint configured\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "@types/vscode": "^1.80.0"
+  }
+}
