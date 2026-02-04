@@ -35,3 +35,7 @@ VS Code extension that highlights Minecraft § color/formatting codes and `.lang
 1. `npm install`
 2. `npm run compile`
 3. Нажми `F5`, чтобы запустить Extension Development Host.
+
+
+# Example / Пример
+<img width="707" height="361" alt="Code_5dx0kwimm6_1" src="https://github.com/user-attachments/assets/9d928b6c-573c-4139-92bf-4d77b9f695ab" />
