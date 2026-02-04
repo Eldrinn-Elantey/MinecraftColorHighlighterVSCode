@@ -138,15 +138,25 @@ const addFormattingRanges = (
   formatRanges: Map<string, vscode.Range[]>
 ) => {
   FORMAT_REGEX.lastIndex = 0;
+  const matches: RegExpExecArray[] = [];
   let match: RegExpExecArray | null;
 
   while ((match = FORMAT_REGEX.exec(text)) !== null) {
-    const code = match[2].toLowerCase();
-    const rangeStart = startOffset + match.index;
-    const rangeEnd = rangeStart + match[1].length;
-    const ranges = formatRanges.get(code);
+    matches.push(match);
+  }
 
-    if (ranges) {
+  for (let i = 0; i < matches.length; i++) {
+    const current = matches[i];
+    const next = matches[i + 1];
+    const code = current[2].toLowerCase();
+
+    const rangeStart = startOffset + current.index;
+    const rangeEnd = next
+      ? startOffset + next.index
+      : startOffset + text.length;
+
+    const ranges = formatRanges.get(code);
+    if (ranges && rangeEnd > rangeStart) {
       ranges.push(new vscode.Range(document.positionAt(rangeStart), document.positionAt(rangeEnd)));
     }
   }
