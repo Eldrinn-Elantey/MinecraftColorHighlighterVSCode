@@ -270,19 +270,86 @@ const findKeyInLine = (line, searchKey) => {
     return null;
 };
 const provideDefinition = async (document, position) => {
-    const literal = getStringLiteralAtPosition(document, position);
-    if (!literal) {
-        return undefined;
+    const isLangFile = document.fileName.toLowerCase().endsWith(".lang");
+    const lineText = document.lineAt(position.line).text;
+    const equalsIndex = lineText.indexOf("=");
+    let key = null;
+    if (isLangFile && equalsIndex !== -1 && position.character <= equalsIndex) {
+        const rawKey = lineText.substring(0, equalsIndex).trim();
+        if (rawKey.length > 0) {
+            key = rawKey;
+        }
     }
-    const key = literal.text;
-    if (!isLikelyLangKey(key)) {
-        return undefined;
+    if (!key) {
+        const literal = getStringLiteralAtPosition(document, position);
+        if (!literal) {
+            return undefined;
+        }
+        key = literal.text;
+        if (!isLikelyLangKey(key)) {
+            return undefined;
+        }
+    }
+    if (isLangFile) {
+        const codeFiles = await vscode.workspace.findFiles("**/*.{ts,tsx,js,jsx,json,java}", "**/{node_modules,out,dist,build}/**");
+        const codeDocs = vscode.workspace.textDocuments.filter((doc) => {
+            if (doc.isUntitled) {
+                return false;
+            }
+            const lower = doc.fileName.toLowerCase();
+            return (lower.endsWith(".ts") ||
+                lower.endsWith(".tsx") ||
+                lower.endsWith(".js") ||
+                lower.endsWith(".jsx") ||
+                lower.endsWith(".json") ||
+                lower.endsWith(".java"));
+        });
+        const seen = new Set();
+        const filesToSearch = [...codeFiles];
+        for (const file of codeFiles) {
+            seen.add(file.toString());
+        }
+        for (const doc of codeDocs) {
+            const key = doc.uri.toString();
+            if (!seen.has(key)) {
+                filesToSearch.push(doc.uri);
+                seen.add(key);
+            }
+        }
+        const matches = [];
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const stringPattern = new RegExp(`["'\`]${escapedKey}["'\`]`);
+        for (const file of filesToSearch) {
+            let text = "";
+            const openDoc = codeDocs.find((doc) => doc.uri.toString() === file.toString());
+            if (openDoc) {
+                text = openDoc.getText();
+            }
+            else {
+                const content = await vscode.workspace.fs.readFile(file);
+                text = new TextDecoder("utf-8").decode(content);
+            }
+            const lines = text.split(/\r?\n/);
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                const matchIndex = line.search(stringPattern);
+                if (matchIndex === -1) {
+                    continue;
+                }
+                const location = new vscode.Location(file, new vscode.Range(new vscode.Position(i, matchIndex), new vscode.Position(i, matchIndex)));
+                matches.push({ priority: 1, location });
+            }
+        }
+        if (matches.length === 0) {
+            return undefined;
+        }
+        return matches.map((match) => match.location);
     }
     const langFiles = await vscode.workspace.findFiles("**/*.lang");
     const matches = [];
     for (const file of langFiles) {
         const content = await vscode.workspace.fs.readFile(file);
-        const text = content.toString();
+        const text = new TextDecoder("utf-8").decode(content);
         const lines = text.split(/\r?\n/);
         for (let i = 0; i < lines.length; i++) {
             const result = findKeyInLine(lines[i], key);

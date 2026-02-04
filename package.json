@@ -2,7 +2,7 @@
   "name": "minecraft-color-highlighter",
   "displayName": "Minecraft Color Highlighter",
   "description": "Highlights Minecraft \u00a7 color/formatting codes and .lang keys.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "local",
   "license": "MIT",
   "repository": {

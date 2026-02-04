@@ -1,0 +1,8 @@
+{
+  "title": "minecraft.color.highlighter",
+  "description": "Try go-to-definition",
+  "labels": {
+    "start": "ui.start",
+    "diamondName": "item.minecraft.diamond_sword.name"
+  }
+}
