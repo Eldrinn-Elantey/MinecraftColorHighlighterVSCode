@@ -44,6 +44,12 @@ const KEY_DECORATION = vscode.window.createTextEditorDecorationType({
 const EQUALS_DECORATION = vscode.window.createTextEditorDecorationType({
     color: "#c88c00"
 });
+const NEWLINE_ESCAPE_DECORATION = vscode.window.createTextEditorDecorationType({
+    color: "#5aa9ff",
+    backgroundColor: "rgba(90, 169, 255, 0.15)",
+    border: "1px solid rgba(90, 169, 255, 0.45)",
+    borderRadius: "2px"
+});
 const FORMAT_DECORATIONS = new Map();
 for (const formatting of minecraftFormatting_1.ALL_FORMATTINGS) {
     const options = {
@@ -86,6 +92,7 @@ const triggerUpdateDecorations = () => {
 const clearDecorations = (editor) => {
     editor.setDecorations(KEY_DECORATION, []);
     editor.setDecorations(EQUALS_DECORATION, []);
+    editor.setDecorations(NEWLINE_ESCAPE_DECORATION, []);
     for (const decoration of FORMAT_DECORATIONS.values()) {
         editor.setDecorations(decoration, []);
     }
@@ -99,6 +106,7 @@ const updateEditorDecorations = (editor) => {
     }
     const keyRanges = [];
     const equalsRanges = [];
+    const newlineEscapeRanges = [];
     const formatRanges = new Map();
     for (const formatting of minecraftFormatting_1.ALL_FORMATTINGS) {
         formatRanges.set(formatting.code, []);
@@ -122,6 +130,7 @@ const updateEditorDecorations = (editor) => {
             const valueText = text.slice(equalsIndex + 1);
             const valueOffset = lineStartOffset + equalsIndex + 1;
             addFormattingRanges(valueText, valueOffset, document, formatRanges);
+            addNewlineEscapeRanges(valueText, valueOffset, document, newlineEscapeRanges);
         }
         else {
             addFormattingRanges(text, lineStartOffset, document, formatRanges);
@@ -129,6 +138,7 @@ const updateEditorDecorations = (editor) => {
     }
     editor.setDecorations(KEY_DECORATION, keyRanges);
     editor.setDecorations(EQUALS_DECORATION, equalsRanges);
+    editor.setDecorations(NEWLINE_ESCAPE_DECORATION, newlineEscapeRanges);
     for (const [code, ranges] of formatRanges.entries()) {
         const decoration = FORMAT_DECORATIONS.get(code);
         if (decoration) {
@@ -155,6 +165,24 @@ const addFormattingRanges = (text, startOffset, document, formatRanges) => {
         if (ranges && rangeEnd > rangeStart) {
             ranges.push(new vscode.Range(document.positionAt(rangeStart), document.positionAt(rangeEnd)));
         }
+    }
+};
+const addNewlineEscapeRanges = (text, startOffset, document, ranges) => {
+    for (let i = 0; i < text.length - 1; i++) {
+        if (text[i] !== "\\" || text[i + 1] !== "n") {
+            continue;
+        }
+        let slashCountBefore = 0;
+        for (let j = i - 1; j >= 0 && text[j] === "\\"; j--) {
+            slashCountBefore++;
+        }
+        if (slashCountBefore % 2 !== 0) {
+            continue;
+        }
+        const rangeStart = startOffset + i;
+        const rangeEnd = rangeStart + 2;
+        ranges.push(new vscode.Range(document.positionAt(rangeStart), document.positionAt(rangeEnd)));
+        i++;
     }
 };
 const checkAndReplaceLastWord = async (editor, document, offset) => {

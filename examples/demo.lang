@@ -13,6 +13,7 @@ format.italic=§oItalic Text
 format.underline=§nUnderline
 format.strikethrough=§mStrikethrough
 format.reset=§rReset
+format.split=\n
 
 # Mixed
 ui.start=§aStart §f|§e Options §f|§c Quit
